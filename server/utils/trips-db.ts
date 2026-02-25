@@ -62,9 +62,18 @@ export async function readTripsFromFile() {
   } catch (error) {
     const err = error as NodeJS.ErrnoException
     if (err.code === 'ENOENT') {
-      await fs.mkdir(dirname(DATA_FILE), { recursive: true })
-      await fs.writeFile(DATA_FILE, '[]', 'utf-8')
-      return []
+      try {
+        // In production, seed writable storage with bundled data on first run.
+        const bundledRaw = await fs.readFile(DEV_DATA_FILE, 'utf-8')
+        const bundledTrips = normalizeTrips(JSON.parse(bundledRaw))
+        await fs.mkdir(dirname(DATA_FILE), { recursive: true })
+        await fs.writeFile(DATA_FILE, `${JSON.stringify(bundledTrips, null, 2)}\n`, 'utf-8')
+        return bundledTrips
+      } catch {
+        await fs.mkdir(dirname(DATA_FILE), { recursive: true })
+        await fs.writeFile(DATA_FILE, '[]', 'utf-8')
+        return []
+      }
     }
     throw error
   }
