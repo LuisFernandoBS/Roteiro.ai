@@ -6,8 +6,7 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon/favicon-16x16.png' },
         { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon/favicon-32x32.png' },
-        { rel: 'apple-touch-icon', sizes: '180x180', href: '/favicon/apple-touch-icon.png' },
-        { rel: 'manifest', href: '/favicon/site.webmanifest' }
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/favicon/apple-touch-icon.png' }
       ]
     }
   },
@@ -22,11 +21,13 @@ export default defineNuxtConfig({
       {
         registerType: 'autoUpdate',
         manifest: {
+          id: '/',
           name: 'Roteiro.ai',
           short_name: 'Roteiro',
           theme_color: '#0f172a',
           background_color: '#f8fafc',
           display: 'standalone',
+          scope: '/',
           start_url: '/',
           icons: [
             {
