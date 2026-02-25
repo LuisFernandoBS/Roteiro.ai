@@ -1,5 +1,6 @@
 import { promises as fs } from 'node:fs'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
 
 type TripActivity = {
   id: string
@@ -17,8 +18,9 @@ type Trip = {
   activities: TripActivity[]
 }
 
-const DATA_DIR = resolve(process.cwd(), 'server', 'data')
-const DATA_FILE = resolve(DATA_DIR, 'trips.json')
+const DEV_DATA_FILE = resolve(process.cwd(), 'server', 'data', 'trips.json')
+const PROD_DATA_FILE = resolve(tmpdir(), 'roteiro-ai', 'trips.json')
+const DATA_FILE = process.env.TRIPS_DB_PATH || (process.dev ? DEV_DATA_FILE : PROD_DATA_FILE)
 
 function normalizeTrips(input: unknown): Trip[] {
   if (!Array.isArray(input)) {
@@ -60,7 +62,7 @@ export async function readTripsFromFile() {
   } catch (error) {
     const err = error as NodeJS.ErrnoException
     if (err.code === 'ENOENT') {
-      await fs.mkdir(DATA_DIR, { recursive: true })
+      await fs.mkdir(dirname(DATA_FILE), { recursive: true })
       await fs.writeFile(DATA_FILE, '[]', 'utf-8')
       return []
     }
@@ -70,7 +72,7 @@ export async function readTripsFromFile() {
 
 export async function writeTripsToFile(input: unknown) {
   const trips = normalizeTrips(input)
-  await fs.mkdir(DATA_DIR, { recursive: true })
+  await fs.mkdir(dirname(DATA_FILE), { recursive: true })
   await fs.writeFile(DATA_FILE, `${JSON.stringify(trips, null, 2)}\n`, 'utf-8')
   return trips
 }
