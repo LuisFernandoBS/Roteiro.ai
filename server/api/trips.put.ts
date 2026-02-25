@@ -1,6 +1,7 @@
 import { writeTripsToFile } from '../utils/trips-db'
 
 export default defineEventHandler(async (event) => {
+  setHeader(event, 'Cache-Control', 'no-store')
   const body = await readBody<{ trips?: unknown }>(event)
 
   if (!body || typeof body !== 'object') {
