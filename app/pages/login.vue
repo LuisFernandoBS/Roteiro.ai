@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const authStore = useAuthStore()
-const loginValue = ref('')
-const passValue = ref('')
+const loginValue = ref('admin')
+const passValue = ref('admin')
 const showPassword = ref(false)
 const errorMessage = ref('')
 const isSubmitting = ref(false)
@@ -46,7 +46,7 @@ async function submit() {
             v-model="loginValue"
             type="text"
             autocomplete="username"
-            class="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)]"
+            class="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]"
             placeholder="seu login"
             required
           >
@@ -59,17 +59,22 @@ async function submit() {
               v-model="passValue"
               :type="showPassword ? 'text' : 'password'"
               autocomplete="current-password"
-              class="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 pr-14 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)]"
+              class="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 pr-12 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]"
               placeholder="sua senha"
               required
             >
             <button
               type="button"
-              class="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-semibold text-[var(--text)]/80"
-              :aria-label="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
+              class="absolute right-0 top-0 h-full w-12 flex items-center justify-center text-[var(--text)]/60 hover:text-[var(--primary)] transition-colors"
               @click="showPassword = !showPassword"
             >
-              {{ showPassword ? 'Ocultar' : 'Mostrar' }}
+              <Transition name="fade-rotate" mode="out-in">
+                <Icon 
+                  :key="showPassword ? 'open' : 'closed'" 
+                  :name="showPassword ? 'mdi:eye-off' : 'mdi:eye'" 
+                  class="h-5 w-5" 
+                />
+              </Transition>
             </button>
           </div>
         </label>
@@ -81,9 +86,9 @@ async function submit() {
         <button
           type="submit"
           :disabled="isSubmitting"
-          class="w-full rounded-xl bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          class="w-full rounded-xl bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition active:scale-[0.98] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Entrar
+          {{ isSubmitting ? 'Entrando...' : 'Entrar' }}
         </button>
       </form>
     </section>

@@ -16,6 +16,14 @@ useHead(() => ({
 }))
 
 function toggleTheme() {
+  if (process.client) {
+    const root = document.documentElement
+    root.classList.add('theme-switching')
+    window.setTimeout(() => {
+      root.classList.remove('theme-switching')
+    }, 350)
+  }
+
   theme.value = isDark.value ? 'light' : 'dark'
 }
 </script>
@@ -25,11 +33,17 @@ function toggleTheme() {
     <VitePwaManifest />
     <NuxtRouteAnnouncer />
     <button
-      class="fixed right-4 top-4 z-30 inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] shadow-sm"
+      class="fixed left-4 bottom-4 z-30 inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] shadow-sm active:scale-90 transition-transform"
       :aria-label="isDark ? 'Ativar tema claro' : 'Ativar tema escuro'"
       @click="toggleTheme"
     >
-      <Icon :name="isDark ? 'ph:sun-bold' : 'ph:moon-bold'" />
+      <Transition name="fade-rotate" mode="out-in">
+        <Icon 
+          :key="isDark ? 'sun' : 'moon'" 
+          :name="isDark ? 'ph:sun-bold' : 'ph:moon-bold'" 
+          class="h-5 w-5"
+        />
+      </Transition>
     </button>
     <NuxtPage />
   </div>
