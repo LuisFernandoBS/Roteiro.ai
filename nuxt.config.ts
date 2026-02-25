@@ -17,7 +17,39 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@nuxtjs/tailwindcss',
     '@formkit/auto-animate',
-    '@vite-pwa/nuxt'
+    [
+      '@vite-pwa/nuxt',
+      {
+        registerType: 'autoUpdate',
+        manifest: {
+          name: 'Roteiro.ai',
+          short_name: 'Roteiro',
+          theme_color: '#0f172a',
+          background_color: '#f8fafc',
+          display: 'standalone',
+          start_url: '/',
+          icons: [
+            {
+              src: '/favicon/android-chrome-192x192.png',
+              sizes: '192x192',
+              type: 'image/png'
+            },
+            {
+              src: '/favicon/android-chrome-512x512.png',
+              sizes: '512x512',
+              type: 'image/png'
+            }
+          ]
+        },
+        workbox: {
+          navigateFallback: '/'
+        },
+        devOptions: {
+          enabled: true,
+          type: 'module'
+        }
+      }
+    ]
   ],
   runtimeConfig: {
     public: {
@@ -31,36 +63,6 @@ export default defineNuxtConfig({
           pass: process.env.NUXT_PUBLIC_USER2_PASS || process.env.VITE_USER2_PASS || ''
         }
       ]
-    }
-  },
-  pwa: {
-    registerType: 'autoUpdate',
-    manifest: {
-      name: 'Roteiro.ai',
-      short_name: 'Roteiro',
-      theme_color: '#0f172a',
-      background_color: '#f8fafc',
-      display: 'standalone',
-      start_url: '/',
-      icons: [
-        {
-          src: '/favicon/android-chrome-192x192.png',
-          sizes: '192x192',
-          type: 'image/png'
-        },
-        {
-          src: '/favicon/android-chrome-512x512.png',
-          sizes: '512x512',
-          type: 'image/png'
-        }
-      ]
-    },
-    workbox: {
-      navigateFallback: '/'
-    },
-    devOptions: {
-      enabled: true,
-      type: 'module'
     }
   }
 })
