@@ -11,44 +11,43 @@ export default defineNuxtConfig({
     }
   },
   css: ['~/assets/css/main.css'],
-  modules: [
-    '@nuxt/icon',
-    '@pinia/nuxt',
-    '@nuxtjs/tailwindcss',
-    '@formkit/auto-animate',
-    [
-      '@vite-pwa/nuxt',
-      {
-        registerType: 'autoUpdate',
-        manifest: {
-          id: '/',
-          name: 'Roteiro.ai',
-          short_name: 'Roteiro',
-          theme_color: '#0f172a',
-          background_color: '#f8fafc',
-          display: 'standalone',
-          scope: '/',
-          start_url: '/',
-          icons: [
-            {
-              src: '/favicon/android-chrome-192x192.png',
-              sizes: '192x192',
-              type: 'image/png'
-            },
-            {
-              src: '/favicon/android-chrome-512x512.png',
-              sizes: '512x512',
-              type: 'image/png'
-            }
-          ]
-        },
-        devOptions: {
-          enabled: true,
-          type: 'module'
-        }
+  modules: ['@nuxt/icon', '@pinia/nuxt', '@nuxtjs/tailwindcss', '@formkit/auto-animate', [
+    '@vite-pwa/nuxt',
+    {
+      registerType: 'autoUpdate',
+      manifest: {
+        id: '/',
+        name: 'Roteiro.ai',
+        short_name: 'Roteiro',
+        theme_color: '#0f172a',
+        background_color: '#f8fafc',
+        display: 'standalone',
+        scope: '/',
+        start_url: '/',
+        icons: [
+          {
+            src: '/favicon/android-chrome-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/favicon/android-chrome-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module'
       }
-    ]
-  ],
+    }
+  ], '@nuxtjs/supabase'],
+  supabase: {
+    redirect: false,
+    url: process.env.NUXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
+    key: process.env.NUXT_PUBLIC_SUPABASE_KEY || process.env.SUPABASE_KEY
+  },
   runtimeConfig: {
     public: {
       authUsers: [

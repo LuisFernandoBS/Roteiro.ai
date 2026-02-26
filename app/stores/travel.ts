@@ -1,3 +1,5 @@
+import { defineStore } from 'pinia'
+
 export type TripActivity = {
   id: string
   title: string
@@ -26,17 +28,58 @@ type NewActivityInput = {
   date?: string
 }
 
-type TripsResponse = {
-  trips: Trip[]
+type DbTripRow = {
+  id: string
+  name: string | null
+  content: {
+    name?: string
+    startDate?: string
+    endDate?: string
+    activities?: TripActivity[]
+  } | null
+  created_at?: string | null
 }
 
 export const useTravelStore = defineStore('travel', () => {
+  const supabase = useSupabaseClient()
+
   const trips = ref<Trip[]>([])
   const hasLoaded = ref(false)
   const isLoading = ref(false)
   let loadPromise: Promise<void> | null = null
 
   const hasTrips = computed(() => trips.value.length > 0)
+
+  function normalizeActivities(input: unknown): TripActivity[] {
+    if (!Array.isArray(input)) {
+      return []
+    }
+
+    return input
+      .filter((item) => typeof item === 'object' && item !== null)
+      .map((item) => {
+        const value = item as Record<string, unknown>
+        return {
+          id: String(value.id || ''),
+          title: String(value.title || ''),
+          time: String(value.time || ''),
+          date: String(value.date || ''),
+          checked: Boolean(value.checked)
+        }
+      })
+      .filter((item) => item.id && item.title)
+  }
+
+  function mapRowToTrip(row: DbTripRow): Trip {
+    const content = row.content || {}
+    return {
+      id: String(row.id),
+      name: String(row.name || content.name || ''),
+      startDate: String(content.startDate || ''),
+      endDate: String(content.endDate || ''),
+      activities: normalizeActivities(content.activities)
+    }
+  }
 
   async function loadTrips(force = false) {
     if (hasLoaded.value && !force) {
@@ -48,47 +91,65 @@ export const useTravelStore = defineStore('travel', () => {
 
     loadPromise = (async () => {
       isLoading.value = true
-      try {
-        const response = await $fetch<TripsResponse>('/api/trips')
-        trips.value = Array.isArray(response.trips) ? response.trips : []
-      } catch (error) {
-        console.error('Falha ao carregar trips:', error)
-      } finally {
-        hasLoaded.value = true
-        isLoading.value = false
-        loadPromise = null
+      const { data, error } = await supabase
+        .from('trips')
+        .select('id, name, content, created_at')
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Erro ao carregar trips:', error.message)
+      } else {
+        const rows = (data || []) as DbTripRow[]
+        trips.value = rows.map(mapRowToTrip)
       }
+
+      hasLoaded.value = true
+      isLoading.value = false
+      loadPromise = null
     })()
 
     return loadPromise
   }
 
-  async function persistTrips() {
-    try {
-      await $fetch('/api/trips', {
-        method: 'PUT',
-        body: { trips: trips.value }
-      })
-    } catch (error) {
-      console.error('Falha ao salvar trips:', error)
+  function findTripById(id: string) {
+    return trips.value.find((trip) => trip.id === id)
+  }
+
+  async function persistTrip(trip: Trip) {
+    const payload = {
+      id: trip.id,
+      name: trip.name,
+      content: {
+        name: trip.name,
+        startDate: trip.startDate,
+        endDate: trip.endDate,
+        activities: trip.activities
+      }
     }
+
+    const { error } = await supabase.from('trips').upsert(payload)
+    if (error) {
+      console.error('Erro ao salvar trip:', error.message)
+      return false
+    }
+
+    return true
   }
 
   function addTrip(payload: NewTripInput) {
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-    trips.value.unshift({
+    const id = crypto.randomUUID()
+    const trip: Trip = {
       id,
       name: payload.name.trim(),
       startDate: payload.startDate,
       endDate: payload.endDate,
       activities: []
-    })
-    void persistTrips()
-    return id
-  }
+    }
 
-  function findTripById(id: string) {
-    return trips.value.find((trip) => trip.id === id)
+    trips.value.unshift(trip)
+    void persistTrip(trip)
+
+    return id
   }
 
   function addActivity(tripId: string, payload: NewActivityInput) {
@@ -105,7 +166,7 @@ export const useTravelStore = defineStore('travel', () => {
       checked: false
     })
 
-    void persistTrips()
+    void persistTrip(trip)
     return true
   }
 
@@ -121,7 +182,7 @@ export const useTravelStore = defineStore('travel', () => {
     }
 
     activity.checked = !activity.checked
-    void persistTrips()
+    void persistTrip(trip)
     return true
   }
 
@@ -131,8 +192,8 @@ export const useTravelStore = defineStore('travel', () => {
     hasLoaded,
     isLoading,
     loadTrips,
-    addTrip,
     findTripById,
+    addTrip,
     addActivity,
     toggleActivityChecked
   }
